@@ -1,0 +1,245 @@
+{
+  "tool": "scar-tissue",
+  "schema_version": 1,
+  "target": "examples/payment-api/before.py",
+  "findings": [
+    {
+      "id": "ST-001",
+      "rule": "security.missing-authorization",
+      "severity": "critical",
+      "confidence": "confirmed",
+      "title": "Checkout and order history act on whatever customer_id the caller sends",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 31,
+        "end_line": 53
+      },
+      "also_at": [
+        {
+          "file": "examples/payment-api/before.py",
+          "line": 57,
+          "end_line": 59
+        }
+      ],
+      "evidence": "def checkout(customer_id: str, amount_cents: int, use_wallet: bool = False):\n...\ndef list_orders(customer_id: str):",
+      "failure": {
+        "trigger": "An unauthenticated attacker calls POST /checkout?customer_id=<victim>&use_wallet=true, or GET /orders?customer_id=<victim>, cycling through customer IDs",
+        "what_breaks": "Neither endpoint checks who is calling, so the attacker spends any customer's wallet balance and reads every customer's order history",
+        "who_notices": "Customers whose balances drain, then support, and possibly a regulator if order data counts as personal data"
+      },
+      "fix": "Authenticate every request with a dependency that resolves the customer from a verified session or token, and remove customer_id from the request entirely so it cannot be supplied by the caller."
+    },
+    {
+      "id": "ST-002",
+      "rule": "idempotency.missing-key",
+      "severity": "critical",
+      "confidence": "confirmed",
+      "title": "Checkout cannot recognize a repeated request",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 31,
+        "end_line": 53
+      },
+      "evidence": "def checkout(customer_id: str, amount_cents: int, use_wallet: bool = False):",
+      "failure": {
+        "trigger": "The client's request times out after the card was charged, and the mobile app retries checkout",
+        "what_breaks": "The second request is treated as a new purchase: the card is charged again and a second order is created",
+        "who_notices": "The customer, on their card statement, then support and finance"
+      },
+      "fix": "Require an Idempotency-Key header. Insert (customer_id, key, request_hash, status='in_progress') under a unique constraint before any side effect; on a repeat, replay the stored response or return 409 while in progress."
+    },
+    {
+      "id": "ST-003",
+      "rule": "retries.non-idempotent",
+      "severity": "critical",
+      "confidence": "confirmed",
+      "title": "Card charge is retried with no idempotency key sent to the provider",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 20,
+        "end_line": 26
+      },
+      "evidence": "for attempt in range(5):\n    resp = requests.post(PAYMENTS_URL, json={...})",
+      "failure": {
+        "trigger": "The provider charges the card, but the connection drops before the response arrives",
+        "what_breaks": "The loop treats the lost response as a failure and charges again, up to five times for one checkout",
+        "who_notices": "The customer, who sees up to five identical charges"
+      },
+      "fix": "Send an Idempotency-Key header derived from the checkout's key on every attempt, so the provider deduplicates the charge. Only then is retrying safe."
+    },
+    {
+      "id": "ST-004",
+      "rule": "concurrency.lost-update",
+      "severity": "critical",
+      "confidence": "confirmed",
+      "title": "Wallet balance updated with read-modify-write",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 35,
+        "end_line": 39
+      },
+      "evidence": "wallet = db.query(Wallet)...first()\nif wallet.balance_cents < amount_cents: ...\nwallet.balance_cents -= amount_cents",
+      "failure": {
+        "trigger": "Two checkouts for the same customer run at the same moment (double tap, two devices, or a retry)",
+        "what_breaks": "Both read the same balance and both pass the check; one debit is lost or the wallet pays for two orders with money for one",
+        "who_notices": "Finance, during reconciliation, as unexplained negative balances"
+      },
+      "fix": "Debit atomically: UPDATE wallets SET balance_cents = balance_cents - :amt WHERE customer_id = :id AND balance_cents >= :amt, and treat rowcount 0 as insufficient balance."
+    },
+    {
+      "id": "ST-005",
+      "rule": "failure.partial-failure",
+      "severity": "critical",
+      "confidence": "confirmed",
+      "title": "Card is charged before the order is safely recorded",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 42,
+        "end_line": 46
+      },
+      "evidence": "charge = charge_with_retry(...)\norder = Order(...)\ndb.add(order)\ndb.commit()",
+      "failure": {
+        "trigger": "The database commit fails after a successful charge (deadlock, connection drop, deploy restart)",
+        "what_breaks": "The customer has been charged, but no order exists and nothing records that a charge happened",
+        "who_notices": "The customer, who paid and received nothing"
+      },
+      "fix": "Record the checkout's progress (the idempotency row) before charging, write the order and the charge ID in one transaction after the charge, and run a reconciliation job that matches provider charges to orders and refunds orphans."
+    },
+    {
+      "id": "ST-006",
+      "rule": "messaging.dual-write",
+      "severity": "critical",
+      "confidence": "confirmed",
+      "title": "Order commit and 'orders.paid' event are not atomic",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 46,
+        "end_line": 51
+      },
+      "evidence": "db.commit()\ntry:\n    publish(\"orders.paid\", {...})\nexcept Exception:\n    pass",
+      "failure": {
+        "trigger": "The broker is unavailable, or the process is killed between the commit and the publish",
+        "what_breaks": "The order is saved as PAID but the event is never sent, so fulfilment and the confirmation email never happen",
+        "who_notices": "The customer, whose paid order never ships"
+      },
+      "fix": "Write the event to an outbox table in the same transaction as the order, and publish it from a separate relay. Make consumers idempotent on order_id."
+    },
+    {
+      "id": "ST-007",
+      "rule": "security.client-trusted-value",
+      "severity": "high",
+      "confidence": "likely",
+      "title": "The amount to charge comes from the client",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 31
+      },
+      "evidence": "def checkout(customer_id: str, amount_cents: int, use_wallet: bool = False):",
+      "failure": {
+        "trigger": "A logged-in customer edits the checkout request and sends amount_cents=1 for a cart worth 50,000",
+        "what_breaks": "The server charges 1 cent, then saves the order as PAID for the full cart, so the goods ship almost free",
+        "who_notices": "Finance, when order totals stop matching revenue"
+      },
+      "assumption": "The order is for server-side items with known prices (a cart or product catalog), not a free-form amount such as a top-up or donation",
+      "fix": "Accept a cart or order ID, load the line items and prices on the server, and compute amount_cents there. Never read a price, total, or discount from the request."
+    },
+    {
+      "id": "ST-008",
+      "rule": "timeouts.missing",
+      "severity": "high",
+      "confidence": "confirmed",
+      "title": "Payment provider call has no timeout",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 22
+      },
+      "evidence": "requests.post(PAYMENTS_URL, json={\"customer\": customer_id, \"amount\": amount_cents})",
+      "failure": {
+        "trigger": "The payment provider stops responding without closing connections",
+        "what_breaks": "Python requests waits indefinitely, so every checkout worker blocks until the server has no workers left and the whole API stops responding",
+        "who_notices": "Every user of the API, and the on-call engineer"
+      },
+      "fix": "Pass timeout=(3, 10) (connect, read) on every call, or configure it once on a shared requests.Session."
+    },
+    {
+      "id": "ST-009",
+      "rule": "retries.no-backoff",
+      "severity": "high",
+      "confidence": "confirmed",
+      "title": "Retries use a fixed 1-second sleep with no jitter",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 26
+      },
+      "evidence": "time.sleep(1)",
+      "failure": {
+        "trigger": "The payment provider has a brief outage during peak traffic",
+        "what_breaks": "Every in-flight checkout retries in lockstep each second, multiplying load on the provider while it tries to recover",
+        "who_notices": "All customers checking out, as the outage lasts longer than it needed to"
+      },
+      "fix": "Use exponential backoff with full jitter, capped (for example random.uniform(0, min(4, 0.5 * 2 ** attempt))), and cap total attempts at 3."
+    },
+    {
+      "id": "ST-010",
+      "rule": "failure.swallowed-error",
+      "severity": "high",
+      "confidence": "confirmed",
+      "title": "Failure to publish the order event is silently ignored",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 50,
+        "end_line": 51
+      },
+      "evidence": "except Exception:\n    pass",
+      "failure": {
+        "trigger": "publish() raises because the broker is down or misconfigured",
+        "what_breaks": "The API returns success, no log or metric records the lost event, and the problem is invisible until customers complain",
+        "who_notices": "Customers, days later, when orders do not arrive"
+      },
+      "fix": "Remove the bare except. With the outbox fix (ST-006), publishing moves to the relay, which retries and alerts on failure."
+    },
+    {
+      "id": "ST-011",
+      "rule": "database.unbounded-query",
+      "severity": "high",
+      "confidence": "confirmed",
+      "title": "Order list loads every order for the customer",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 59
+      },
+      "evidence": "db.query(Order).filter_by(customer_id=customer_id).all()",
+      "failure": {
+        "trigger": "A large business customer with hundreds of thousands of orders opens their order history",
+        "what_breaks": "The request loads every row into memory, the worker runs out of memory or times out, and the endpoint fails for that customer",
+        "who_notices": "Your largest customers"
+      },
+      "fix": "Paginate with a server-enforced maximum page size, using keyset pagination: WHERE id > :after_id ORDER BY id LIMIT :limit."
+    },
+    {
+      "id": "ST-012",
+      "rule": "retries.permanent-errors",
+      "severity": "medium",
+      "confidence": "confirmed",
+      "title": "Declined cards and bad requests are retried",
+      "location": {
+        "file": "examples/payment-api/before.py",
+        "line": 25
+      },
+      "evidence": "except requests.RequestException:",
+      "failure": {
+        "trigger": "The provider returns 402 card declined, and raise_for_status() raises an HTTPError, a subclass of RequestException",
+        "what_breaks": "The declined card is retried five times, adding about five seconds of delay and five declined attempts that can trigger the issuer's fraud checks",
+        "who_notices": "The customer, whose card may be blocked by their bank"
+      },
+      "fix": "Retry only connection errors, timeouts, and 429/502/503/504. Return other 4xx responses to the caller immediately."
+    }
+  ],
+  "summary": {
+    "critical": 6,
+    "high": 5,
+    "medium": 1,
+    "low": 0,
+    "fix_first": "ST-001"
+  }
+}

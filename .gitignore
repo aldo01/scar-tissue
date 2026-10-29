@@ -1,0 +1,5 @@
+node_modules/
+.DS_Store
+__pycache__/
+scar-tissue-report.json
+!examples/**/scar-tissue-report.json

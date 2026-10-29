@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "scar-tissue report",
+  "description": "Machine-readable output of a scar-tissue production-readiness audit. validate-findings.cjs enforces this schema plus semantic checks (known rule IDs, concrete failure scenarios, summary counts).",
+  "type": "object",
+  "required": ["tool", "schema_version", "target", "findings"],
+  "additionalProperties": false,
+  "properties": {
+    "tool": { "const": "scar-tissue" },
+    "schema_version": { "const": 1 },
+    "target": { "type": "string", "minLength": 1, "description": "What was audited: a path, repo, or diff reference." },
+    "generated_at": { "type": "string", "description": "ISO 8601 timestamp." },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["critical", "high", "medium", "low"],
+      "additionalProperties": false,
+      "properties": {
+        "critical": { "type": "integer", "minimum": 0 },
+        "high": { "type": "integer", "minimum": 0 },
+        "medium": { "type": "integer", "minimum": 0 },
+        "low": { "type": "integer", "minimum": 0 },
+        "fix_first": { "type": "string", "pattern": "^ST-[0-9]{3,}$", "description": "ID of the single finding to fix first." }
+      }
+    }
+  },
+  "$defs": {
+    "location": {
+      "type": "object",
+      "required": ["file", "line"],
+      "additionalProperties": false,
+      "properties": {
+        "file": { "type": "string", "minLength": 1 },
+        "line": { "type": "integer", "minimum": 1 },
+        "end_line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": ["id", "rule", "severity", "confidence", "title", "location", "evidence", "failure", "fix"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^ST-[0-9]{3,}$" },
+        "rule": { "type": "string", "pattern": "^[a-z]+\\.[a-z0-9-]+$", "description": "A rule ID from rules.json." },
+        "severity": { "enum": ["critical", "high", "medium", "low"] },
+        "confidence": { "enum": ["confirmed", "likely", "needs-validation"] },
+        "title": { "type": "string", "minLength": 1 },
+        "location": { "$ref": "#/$defs/location" },
+        "also_at": {
+          "type": "array",
+          "description": "Other locations with the same issue.",
+          "items": { "$ref": "#/$defs/location" }
+        },
+        "evidence": { "type": "string", "minLength": 1, "description": "The relevant code excerpt." },
+        "failure": {
+          "type": "object",
+          "required": ["trigger", "what_breaks", "who_notices"],
+          "additionalProperties": false,
+          "properties": {
+            "trigger": { "type": "string", "minLength": 10 },
+            "what_breaks": { "type": "string", "minLength": 10 },
+            "who_notices": { "type": "string", "minLength": 3 }
+          }
+        },
+        "fix": { "type": "string", "minLength": 10 },
+        "assumption": { "type": "string", "description": "Required when confidence is 'likely'." },
+        "validation": { "type": "string", "description": "Required when confidence is 'needs-validation': what to test or check." }
+      }
+    }
+  }
+}
