@@ -49,9 +49,9 @@ Also: dynamic identifiers (`ORDER BY`, column names, table names) taken from inp
 **Look for**: untrusted input reaching a shell or a process launcher:
 - Python `os.system`, `os.popen`, `subprocess.run(..., shell=True)` with interpolated strings.
 - Node.js `child_process.exec`/`execSync` with template strings.
-- Java `Runtime.exec` with a concatenated command, or `ProcessBuilder("sh", "-c", ...)`.
-- Go `exec.Command("sh", "-c", ...)` or `bash -c` with input.
-- Argument injection even without a shell: input starting with `-` passed as an argument to tools like `git`, `tar`, `ffmpeg`, or `ImageMagick` (for example `--upload-pack=...` for `git`).
+- Java `Runtime.exec` with a concatenated command, or a `ProcessBuilder` that starts a shell to run a command string.
+- Go `exec.Command` that starts a shell to run a command string built from input.
+- Argument injection even without a shell: input starting with `-` passed as an argument to tools like `git`, `tar`, `ffmpeg`, or `ImageMagick` (the tool reads a value such as `--some-option=...` as an option rather than a file name, which can make it write files or run commands; git, for example, has options that run a command).
 
 **Not a finding when**: the program and arguments are passed as a list with no shell (`subprocess.run(["convert", path, out])`, `execFile`, `exec.Command("convert", path, out)`), input is validated against a strict allowlist, and options are separated from arguments with `--` where the tool supports it.
 
@@ -117,7 +117,7 @@ new File(baseDir, request.getParameter("name"));
 res.sendFile(path.join(__dirname, "files", req.query.f));
 ```
 
-Also archive extraction that trusts entry names (zip slip: entries named `../../app/config.py`), and downloads where the stored path comes from user-controlled data.
+Also archive extraction that trusts entry names (zip slip: entries named `../../app/config.py`), and files saved under a path built from user-controlled data.
 
 **Not a finding when**: files are looked up by an ID that maps to a server-generated name, or the resolved real path is verified to stay inside the base directory after normalization and symlink resolution.
 
@@ -153,9 +153,9 @@ Also archive extraction that trusts entry names (zip slip: entries named `../../
 - Python `lxml` parsers with entity resolution or network access enabled; the standard library XML parsers on untrusted input are exposed to entity-expansion attacks ("billion laughs").
 - Endpoints accepting SOAP, SAML, SVG, DOCX/XLSX (which are zipped XML), RSS, or any `Content-Type: application/xml`.
 
-**Not a finding when**: DTDs are disallowed (Java: `factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)` plus disabling external entities), the input is trusted, or Python uses `defusedxml`.
+**Not a finding when**: DTDs are disallowed (Java: the parser's `disallow-doctype-decl` feature enabled, plus external entities disabled), the input is trusted, or Python uses `defusedxml`.
 
-**Failure**: an attacker uploads XML with `<!ENTITY x SYSTEM "file:///etc/passwd">` or an `http://169.254.169.254/` URL and reads local files or cloud metadata credentials (SSRF), or sends nested entities that expand to gigabytes and exhaust memory.
+**Failure**: an attacker uploads XML with an external entity pointing at a local file such as `/etc/passwd` or at the cloud metadata address `169.254.169.254`, and reads local files or cloud metadata credentials (SSRF), or sends nested entities that expand to gigabytes and exhaust memory.
 
 **Fix**: disable DTDs and external entities on every parser factory (follow the OWASP XXE Prevention Cheat Sheet for your parser), or use `defusedxml` in Python. Prefer JSON where you control the format.
 
