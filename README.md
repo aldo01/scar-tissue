@@ -17,6 +17,10 @@ Experienced engineers avoid these because they have been burned by them. **scar-
 
 ## See it work
 
+<p align="center">
+  <img src="demo/demo.gif" alt="scar-tissue audit of a checkout endpoint: 12 findings, 6 critical" width="820">
+</p>
+
 Here is a checkout endpoint written the way coding agents usually write it ([`before.py`](examples/payment-api/before.py)). It looks fine. It passes happy-path tests.
 
 ```python
@@ -89,7 +93,7 @@ Most AI code reviews bury real problems under "consider adding logging" and "fol
 
 > **If you cannot describe the concrete failure (the trigger, what breaks, and who notices), it is not a finding.**
 
-Machine-readable reports are checked by [`validate-findings.cjs`](skills/scar-tissue/validate-findings.cjs), which rejects findings that describe advice instead of a failure, use unknown rules, or claim `likely` without naming the assumption. Every finding carries a confidence level: `confirmed`, `likely`, or `needs-validation`.
+Machine-readable reports are checked by [`validate-findings.cjs`](skills/scar-tissue/validate-findings.cjs), which rejects findings that describe advice instead of a failure, use unknown rules, or claim `likely` without naming the assumption. Every finding carries a confidence level: `confirmed`, `likely`, or `needs-validation`. Add `--format text` to print a validated report in readable form.
 
 ## Install
 

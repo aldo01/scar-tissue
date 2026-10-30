@@ -222,6 +222,8 @@ node <path-to-this-skill>/validate-findings.cjs scar-tissue-report.json
 
 If it reports errors, fix the report and run it again. Do not present the report until validation passes. The validator rejects unknown rule IDs, findings whose failure scenario is advice rather than a failure, `likely` findings without an assumption, and summaries whose counts do not match.
 
+To show a validated report to the user in readable form, add `--format text`.
+
 ## Reference files
 
 Each reference file is a set of rules. Every rule has the same sections: **Look for**, **Not a finding when**, **Failure**, **Fix**, **Verify**, and **Severity**. Load only what the inventory needs.

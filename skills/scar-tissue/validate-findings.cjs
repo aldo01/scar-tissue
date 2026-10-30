@@ -181,16 +181,80 @@ function validateReport(report, catalog) {
   return { errors, warnings };
 }
 
+function wrap(text, width, indent) {
+  const lines = [];
+  let line = '';
+  for (const word of String(text).split(/\s+/)) {
+    if (line && line.length + 1 + word.length > width) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = line ? `${line} ${word}` : word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.join(`\n${' '.repeat(indent)}`);
+}
+
+function formatLocation(loc) {
+  const file = path.basename(loc.file);
+  return loc.end_line && loc.end_line !== loc.line ? `${file}:${loc.line}-${loc.end_line}` : `${file}:${loc.line}`;
+}
+
+// Renders a valid report as plain text for humans.
+function renderText(report, { color = false, width = 88 } = {}) {
+  const paint = (code, s) => (color ? `\x1b[${code}m${s}\x1b[0m` : s);
+  const SEVERITY_COLOR = { critical: '1;31', high: '31', medium: '33', low: '36' };
+  const out = [];
+
+  for (const f of report.findings) {
+    let head = `${paint(SEVERITY_COLOR[f.severity], `[${f.severity}]`)} ${paint('1', f.rule)}  ${formatLocation(f.location)}`;
+    if (f.also_at && f.also_at.length > 0) head += `  (also ${f.also_at.map(formatLocation).join(', ')})`;
+    out.push(`${paint('2', f.id)} ${head}`);
+    out.push(wrap(f.title, width, 0));
+    const fields = [
+      ['Trigger', f.failure.trigger],
+      ['What breaks', f.failure.what_breaks],
+      ['Who notices', f.failure.who_notices],
+      ['Fix', f.fix],
+    ];
+    if (f.assumption) fields.push(['Assumption', f.assumption]);
+    if (f.validation) fields.push(['Validate', f.validation]);
+    if (f.confidence !== 'confirmed') fields.push(['Confidence', f.confidence]);
+    for (const [label, value] of fields) {
+      const prefix = `  ${`${label}:`.padEnd(13)}`;
+      out.push(`${paint('2', prefix)}${wrap(value, width - prefix.length, prefix.length)}`);
+    }
+    out.push('');
+  }
+
+  const s = report.summary;
+  const counts = SEVERITIES.filter((sev) => s[sev] > 0).map((sev) => `${s[sev]} ${sev}`).join(', ');
+  const total = report.findings.length;
+  out.push(paint('1', `${total} finding${total === 1 ? '' : 's'}: ${counts || 'none'}.${s.fix_first ? ` Fix first: ${s.fix_first}.` : ''}`));
+  return out.join('\n');
+}
+
 function main(argv) {
   const args = argv.slice(2);
   if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
-    console.log('Usage: node validate-findings.cjs <scar-tissue-report.json> [--rules <rules.json>]');
+    console.log('Usage: node validate-findings.cjs <scar-tissue-report.json> [--rules <rules.json>] [--format text]');
+    console.log('  --format text   after validation, print the report in readable form');
     return args.length === 0 ? 2 : 0;
   }
 
-  const reportPath = args[0];
-  const rulesFlag = args.indexOf('--rules');
-  const rulesPath = rulesFlag >= 0 ? args[rulesFlag + 1] : path.join(__dirname, 'rules.json');
+  const flagValue = (name) => {
+    const i = args.indexOf(name);
+    return i >= 0 ? args[i + 1] : undefined;
+  };
+  const flagValues = new Set(['--rules', '--format'].map((n) => args.indexOf(n) + 1).filter((i) => i > 0));
+  const reportPath = args.find((a, i) => !a.startsWith('--') && !flagValues.has(i));
+  const rulesPath = flagValue('--rules') || path.join(__dirname, 'rules.json');
+  const format = flagValue('--format') || 'check';
+  if (!reportPath || !['check', 'text'].includes(format)) {
+    console.error('Usage: node validate-findings.cjs <scar-tissue-report.json> [--rules <rules.json>] [--format text]');
+    return 2;
+  }
 
   let report;
   try {
@@ -209,11 +273,16 @@ function main(argv) {
   }
 
   const count = Array.isArray(report.findings) ? report.findings.length : 0;
+  if (format === 'text') {
+    const color = (Boolean(process.stdout.isTTY) || Boolean(process.env.FORCE_COLOR)) && !process.env.NO_COLOR;
+    console.log(renderText(report, { color }));
+    return 0;
+  }
   console.log(`OK: ${count} finding(s) valid.`);
   return 0;
 }
 
-module.exports = { validateReport, loadCatalog };
+module.exports = { validateReport, loadCatalog, renderText };
 
 if (require.main === module) {
   process.exitCode = main(process.argv);
