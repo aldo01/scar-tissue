@@ -1,0 +1,29 @@
+name: Missed bug
+description: scar-tissue did not report a production failure or vulnerability it should have caught
+labels: ["missed bug"]
+body:
+  - type: textarea
+    id: code
+    attributes:
+      label: Code
+      description: The smallest code that shows the problem. Remove anything confidential.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: What fails
+      description: The trigger, what breaks, and who notices.
+    validations:
+      required: true
+  - type: input
+    id: rule
+    attributes:
+      label: Rule that should have caught it
+      description: Leave empty if no existing rule covers it.
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and model
+      placeholder: Claude Code with Claude Sonnet, Codex, Cursor

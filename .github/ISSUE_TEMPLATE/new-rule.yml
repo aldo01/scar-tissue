@@ -1,0 +1,41 @@
+name: New rule
+description: Propose a rule for a class of production failure or attack that scar-tissue does not cover
+labels: ["new rule"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every rule needs a real failure behind it. See [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) for the six-part rule format.
+  - type: input
+    id: id
+    attributes:
+      label: Proposed rule ID
+      placeholder: messaging.unbounded-redelivery
+    validations:
+      required: true
+  - type: textarea
+    id: look-for
+    attributes:
+      label: Look for
+      description: The code shapes and framework defaults that cause the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: Failure
+      description: The trigger, what breaks, and who notices.
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: Fix
+      description: The smallest effective change.
+    validations:
+      required: true
+  - type: textarea
+    id: story
+    attributes:
+      label: War story
+      description: Optional. The incident that taught you this.
