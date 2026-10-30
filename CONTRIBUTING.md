@@ -26,7 +26,8 @@ Every rule in scar-tissue should come from a failure or attack that actually hap
 
 4. Add the rule ID to the file's `## Contents` list, in the same order as the headings.
 5. Add the rule to [`rules.json`](skills/scar-tissue/rules.json) with its title, typical severity, and file.
-6. Run `npm test`.
+6. Run `npm run rules` to regenerate [RULES.md](RULES.md).
+7. Run `npm test`.
 
 ## Quality bar
 

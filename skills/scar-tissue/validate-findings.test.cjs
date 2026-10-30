@@ -272,3 +272,9 @@ test('CLI exits 0 for a valid report and 1 for an invalid one', (t) => {
   assert.equal(spawnSync(process.execPath, [cli, bad]).status, 1);
   assert.equal(spawnSync(process.execPath, [cli]).status, 2);
 });
+
+test('RULES.md is up to date with rules.json', () => {
+  const { render, loadRules, OUT } = require('../../scripts/generate-rules-index.cjs');
+  const actual = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
+  assert.equal(actual, render(loadRules()), 'RULES.md is stale. Run: npm run rules');
+});
