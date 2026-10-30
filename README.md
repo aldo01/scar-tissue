@@ -147,17 +147,7 @@ The skill is defensive. It never sends exploit payloads to running systems, prov
 
 ## Contributing a scar
 
-Every rule should come from a failure or attack that actually happens in production. To add one:
-
-1. Add a `## area.rule-name` section to the right file in `skills/scar-tissue/`, with these six parts in order:
-   - **Look for**: the code shapes and framework defaults that cause it, for each stack you know.
-   - **Not a finding when**: the mitigations that make it safe. This is what keeps reviews free of noise.
-   - **Failure**: the concrete scenario (trigger, what breaks, who notices).
-   - **Fix**: the smallest effective change.
-   - **Verify**: the test or check that proves the fix works.
-   - **Severity**: typical severity and when to raise or lower it.
-2. Add the rule ID to the file's `## Contents` list and to `rules.json`.
-3. Run `npm test`. The tests check that every rule has all six parts, that the Contents lists and `rules.json` match the documented rules, and that the example report is valid.
+Every rule should come from a failure or attack that actually happens in production. New rules, false-positive reports, and better framework coverage are all welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the six-part rule format and the quality bar.
 
 War stories in the PR description are welcome. They are the point.
 
