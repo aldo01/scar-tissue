@@ -1,0 +1,15 @@
+{
+  "name": "scar-tissue",
+  "description": "Production reliability and security review for coding agents",
+  "owner": {
+    "name": "Nimish Karan",
+    "url": "https://github.com/aldo01"
+  },
+  "plugins": [
+    {
+      "name": "scar-tissue",
+      "source": "./",
+      "description": "Reviews, audits, and hardens backend code for production failures and security vulnerabilities."
+    }
+  ]
+}
