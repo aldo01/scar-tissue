@@ -93,7 +93,16 @@ Machine-readable reports are checked by [`validate-findings.cjs`](skills/scar-ti
 
 ## Install
 
-With the [Skills CLI](https://skills.sh):
+**Claude Code plugin:**
+
+```bash
+claude plugin marketplace add aldo01/scar-tissue
+claude plugin install scar-tissue@scar-tissue
+```
+
+Or inside a session: `/plugin marketplace add aldo01/scar-tissue`, then `/plugin install scar-tissue@scar-tissue`.
+
+**Any agent**, with the [Skills CLI](https://skills.sh):
 
 ```bash
 npx skills add https://github.com/aldo01/scar-tissue --skill scar-tissue

@@ -1,0 +1,13 @@
+{
+  "name": "scar-tissue",
+  "version": "0.1.0",
+  "description": "Reviews, audits, and hardens backend code for production failures and security vulnerabilities. 90 rules across reliability and security.",
+  "author": {
+    "name": "Nimish Karan",
+    "url": "https://github.com/aldo01"
+  },
+  "homepage": "https://github.com/aldo01/scar-tissue",
+  "repository": "https://github.com/aldo01/scar-tissue",
+  "license": "MIT",
+  "keywords": ["backend", "code-review", "security", "reliability", "production", "audit"]
+}
