@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "scar-tissue",
-      "source": "./",
+      "source": "./skills/scar-tissue",
       "description": "Reviews, audits, and hardens backend code for production failures and security vulnerabilities."
     }
   ]
