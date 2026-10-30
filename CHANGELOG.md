@@ -2,6 +2,15 @@
 
 All notable changes to scar-tissue are listed here. Rule IDs are stable: a released rule ID is never renamed or reused.
 
+## 0.1.1 - 2026-10-30
+
+### Changed
+
+- The Claude Code plugin now ships only the skill folder (`skills/scar-tissue`), not the whole repository. Tests, examples, and the demo stay out of installs.
+- Plugin icon and listing links for Anthropic's plugin directory.
+- `validate-findings.cjs` no longer reads environment variables. Use `--color` or `--no-color` to control color in `--format text` output.
+- Tests moved from the skill folder to `test/`.
+
 ## 0.1.0 - 2026-10-30
 
 First release.

@@ -11,7 +11,7 @@ Set Theme "Dracula"
 Set TypingSpeed 35ms
 
 Hide
-Type "cd examples/payment-api && export PS1='$ ' FORCE_COLOR=1 && clear"
+Type "cd examples/payment-api && export PS1='$ ' && clear"
 Enter
 Show
 
@@ -27,12 +27,12 @@ Enter
 Type "# The scar-tissue audit of that file:"
 Enter
 Sleep 400ms
-Type "node ../../skills/scar-tissue/validate-findings.cjs scar-tissue-report.json --format text | head -30"
+Type "node ../../skills/scar-tissue/validate-findings.cjs scar-tissue-report.json --format text --color | head -30"
 Enter
 Sleep 9s
 
 Type "clear"
 Enter
-Type "node ../../skills/scar-tissue/validate-findings.cjs scar-tissue-report.json --format text | tail -1"
+Type "node ../../skills/scar-tissue/validate-findings.cjs scar-tissue-report.json --format text --color | tail -1"
 Enter
 Sleep 4s

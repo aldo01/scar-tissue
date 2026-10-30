@@ -238,8 +238,10 @@ function renderText(report, { color = false, width = 88 } = {}) {
 function main(argv) {
   const args = argv.slice(2);
   if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
-    console.log('Usage: node validate-findings.cjs <scar-tissue-report.json> [--rules <rules.json>] [--format text]');
+    console.log('Usage: node validate-findings.cjs <scar-tissue-report.json> [--rules <rules.json>] [--format text] [--color | --no-color]');
     console.log('  --format text   after validation, print the report in readable form');
+    console.log('  --color         force color in text output (default: color only on a terminal)');
+    console.log('  --no-color      disable color in text output');
     return args.length === 0 ? 2 : 0;
   }
 
@@ -252,7 +254,7 @@ function main(argv) {
   const rulesPath = flagValue('--rules') || path.join(__dirname, 'rules.json');
   const format = flagValue('--format') || 'check';
   if (!reportPath || !['check', 'text'].includes(format)) {
-    console.error('Usage: node validate-findings.cjs <scar-tissue-report.json> [--rules <rules.json>] [--format text]');
+    console.error('Usage: node validate-findings.cjs <scar-tissue-report.json> [--rules <rules.json>] [--format text] [--color | --no-color]');
     return 2;
   }
 
@@ -274,7 +276,7 @@ function main(argv) {
 
   const count = Array.isArray(report.findings) ? report.findings.length : 0;
   if (format === 'text') {
-    const color = (Boolean(process.stdout.isTTY) || Boolean(process.env.FORCE_COLOR)) && !process.env.NO_COLOR;
+    const color = !args.includes('--no-color') && (args.includes('--color') || Boolean(process.stdout.isTTY));
     console.log(renderText(report, { color }));
     return 0;
   }

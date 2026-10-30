@@ -5,9 +5,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { validateReport, loadCatalog, renderText } = require('./validate-findings.cjs');
+const { validateReport, loadCatalog, renderText } = require('../skills/scar-tissue/validate-findings.cjs');
 
-const SKILL_DIR = __dirname;
+const SKILL_DIR = path.join(__dirname, '..', 'skills', 'scar-tissue');
 const RULES_PATH = path.join(SKILL_DIR, 'rules.json');
 const catalog = loadCatalog(RULES_PATH);
 
@@ -274,7 +274,7 @@ test('CLI exits 0 for a valid report and 1 for an invalid one', (t) => {
 });
 
 test('RULES.md is up to date with rules.json', () => {
-  const { render, loadRules, OUT } = require('../../scripts/generate-rules-index.cjs');
+  const { render, loadRules, OUT } = require('../scripts/generate-rules-index.cjs');
   const actual = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
   assert.equal(actual, render(loadRules()), 'RULES.md is stale. Run: npm run rules');
 });
@@ -304,6 +304,9 @@ test('CLI --format text prints the report and accepts flags in any order', () =>
   assert.match(after.stdout, /12 findings: 6 critical, 5 high, 1 medium\. Fix first: ST-001\./);
 
   assert.equal(run('--format', 'text', examplePath).status, 0);
+  assert.doesNotMatch(after.stdout, /\x1b\[/, 'no color when output is not a terminal');
+  assert.match(run(examplePath, '--format', 'text', '--color').stdout, /\x1b\[/);
+  assert.doesNotMatch(run(examplePath, '--format', 'text', '--color', '--no-color').stdout, /\x1b\[/);
   assert.equal(run(examplePath, '--format', 'html').status, 2);
 });
 
