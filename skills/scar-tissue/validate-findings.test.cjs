@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { validateReport, loadCatalog } = require('./validate-findings.cjs');
+const { validateReport, loadCatalog, renderText } = require('./validate-findings.cjs');
 
 const SKILL_DIR = __dirname;
 const RULES_PATH = path.join(SKILL_DIR, 'rules.json');
@@ -277,4 +277,32 @@ test('RULES.md is up to date with rules.json', () => {
   const { render, loadRules, OUT } = require('../../scripts/generate-rules-index.cjs');
   const actual = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
   assert.equal(actual, render(loadRules()), 'RULES.md is stale. Run: npm run rules');
+});
+
+test('renderText prints each finding and a summary line', () => {
+  const report = {
+    tool: 'scar-tissue',
+    schema_version: 1,
+    findings: [finding({ also_at: [{ file: 'app/refunds.py', line: 7 }] })],
+    summary: { critical: 1, high: 0, medium: 0, low: 0, fix_first: 'ST-001' },
+  };
+  const text = renderText(report);
+  assert.match(text, /^ST-001 \[critical\] idempotency\.missing-key {2}payments\.py:42 {2}\(also refunds\.py:7\)/);
+  assert.match(text, /Trigger: +Client times out/);
+  assert.match(text, /Fix: +Require an Idempotency-Key header/);
+  assert.match(text, /1 finding: 1 critical\. Fix first: ST-001\.$/);
+  assert.doesNotMatch(text, /\x1b\[/, 'no color codes unless asked');
+});
+
+test('CLI --format text prints the report and accepts flags in any order', () => {
+  const examplePath = path.join(SKILL_DIR, '..', '..', 'examples', 'payment-api', 'scar-tissue-report.json');
+  const cli = path.join(SKILL_DIR, 'validate-findings.cjs');
+  const run = (...args) => spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8' });
+
+  const after = run(examplePath, '--format', 'text');
+  assert.equal(after.status, 0);
+  assert.match(after.stdout, /12 findings: 6 critical, 5 high, 1 medium\. Fix first: ST-001\./);
+
+  assert.equal(run('--format', 'text', examplePath).status, 0);
+  assert.equal(run(examplePath, '--format', 'html').status, 2);
 });
