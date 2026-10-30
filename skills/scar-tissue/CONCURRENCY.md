@@ -90,7 +90,7 @@ if (coupon.uses < coupon.maxUses) { await redeem(coupon); }
 await Promise.all(users.map(sendEmail));                 // 50,000 users
 ```
 ```python
-await asyncio.gather(*(fetch(u) for u in urls))
+await asyncio.gather(*(resize_image(p) for p in paths))   # 20,000 images
 ```
 ```go
 for _, item := range items { go process(item) }

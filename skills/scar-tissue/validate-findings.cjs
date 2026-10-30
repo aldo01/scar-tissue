@@ -11,11 +11,11 @@ const path = require('node:path');
 
 const SEVERITIES = ['critical', 'high', 'medium', 'low'];
 const CONFIDENCES = ['confirmed', 'likely', 'needs-validation'];
-const FINDING_KEYS = new Set([
+const FINDING_FIELDS = new Set([
   'id', 'rule', 'severity', 'confidence', 'title', 'location', 'also_at',
   'evidence', 'failure', 'fix', 'assumption', 'validation',
 ]);
-const REPORT_KEYS = new Set(['tool', 'schema_version', 'target', 'generated_at', 'findings', 'summary']);
+const REPORT_FIELDS = new Set(['tool', 'schema_version', 'target', 'generated_at', 'findings', 'summary']);
 
 // A failure scenario describes what happens, not what someone should consider.
 const ADVICE_PATTERNS = [
@@ -39,8 +39,8 @@ function checkLocation(loc, where, errors) {
     errors.push(`${where}: must be an object with "file" and "line"`);
     return;
   }
-  for (const key of Object.keys(loc)) {
-    if (!['file', 'line', 'end_line'].includes(key)) errors.push(`${where}: unknown field "${key}"`);
+  for (const field of Object.keys(loc)) {
+    if (!['file', 'line', 'end_line'].includes(field)) errors.push(`${where}: unknown field "${field}"`);
   }
   if (!isNonEmptyString(loc.file)) errors.push(`${where}.file: required non-empty string`);
   if (!Number.isInteger(loc.line) || loc.line < 1) errors.push(`${where}.line: must be an integer >= 1`);
@@ -60,8 +60,8 @@ function validateFinding(f, i, catalog, seenIds, errors, warnings) {
     return;
   }
 
-  for (const key of Object.keys(f)) {
-    if (!FINDING_KEYS.has(key)) errors.push(`${where}: unknown field "${key}"`);
+  for (const field of Object.keys(f)) {
+    if (!FINDING_FIELDS.has(field)) errors.push(`${where}: unknown field "${field}"`);
   }
 
   if (!isNonEmptyString(f.id) || !/^ST-[0-9]{3,}$/.test(f.id)) {
@@ -95,20 +95,20 @@ function validateFinding(f, i, catalog, seenIds, errors, warnings) {
   if (failure === null || typeof failure !== 'object' || Array.isArray(failure)) {
     errors.push(`${where}.failure: required object with trigger, what_breaks, who_notices`);
   } else {
-    for (const key of Object.keys(failure)) {
-      if (!['trigger', 'what_breaks', 'who_notices'].includes(key)) errors.push(`${where}.failure: unknown field "${key}"`);
+    for (const field of Object.keys(failure)) {
+      if (!['trigger', 'what_breaks', 'who_notices'].includes(field)) errors.push(`${where}.failure: unknown field "${field}"`);
     }
     const minLengths = { trigger: 10, what_breaks: 10, who_notices: 3 };
-    for (const [key, min] of Object.entries(minLengths)) {
-      const value = failure[key];
+    for (const [field, min] of Object.entries(minLengths)) {
+      const value = failure[field];
       if (!isNonEmptyString(value) || value.trim().length < min) {
-        errors.push(`${where}.failure.${key}: required, at least ${min} characters`);
+        errors.push(`${where}.failure.${field}: required, at least ${min} characters`);
         continue;
       }
       const advice = ADVICE_PATTERNS.find((p) => p.test(value));
-      if (advice && key !== 'who_notices') {
+      if (advice && field !== 'who_notices') {
         errors.push(
-          `${where}.failure.${key}: describes advice, not a failure (matched ${advice}). ` +
+          `${where}.failure.${field}: describes advice, not a failure (matched ${advice}). ` +
             'State what happens in production; put recommendations in "fix".'
         );
       }
@@ -136,8 +136,8 @@ function validateReport(report, catalog) {
     return { errors: ['report: must be a JSON object'], warnings };
   }
 
-  for (const key of Object.keys(report)) {
-    if (!REPORT_KEYS.has(key)) errors.push(`report: unknown field "${key}"`);
+  for (const field of Object.keys(report)) {
+    if (!REPORT_FIELDS.has(field)) errors.push(`report: unknown field "${field}"`);
   }
   if (report.tool !== 'scar-tissue') errors.push('tool: must be "scar-tissue"');
   if (report.schema_version !== 1) errors.push('schema_version: must be 1');
@@ -165,8 +165,8 @@ function validateReport(report, catalog) {
     if (s === null || typeof s !== 'object' || Array.isArray(s)) {
       errors.push('summary: must be an object');
     } else {
-      for (const key of Object.keys(s)) {
-        if (![...SEVERITIES, 'fix_first'].includes(key)) errors.push(`summary: unknown field "${key}"`);
+      for (const field of Object.keys(s)) {
+        if (![...SEVERITIES, 'fix_first'].includes(field)) errors.push(`summary: unknown field "${field}"`);
       }
       for (const sev of SEVERITIES) {
         const actual = report.findings.filter((f) => f && f.severity === sev).length;
