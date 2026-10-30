@@ -108,9 +108,9 @@ Or inside a session: `/plugin marketplace add aldo01/scar-tissue`, then `/plugin
 npx skills add https://github.com/aldo01/scar-tissue --skill scar-tissue
 ```
 
-Add `--global` to install it for all your projects.
+Add `-g` to install it for all your projects, and `-a codex`, `-a cursor`, or `-a github-copilot` to pick your agent.
 
-Or copy it manually: put the `skills/scar-tissue` folder in your agent's skills directory (for Claude Code: `~/.claude/skills/` for all projects, or `.claude/skills/` in a repo).
+See [docs/INSTALL.md](docs/INSTALL.md) for every agent's install path, manual install, and setup for agents that only read `AGENTS.md`.
 
 ## Use it
 
