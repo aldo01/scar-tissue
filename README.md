@@ -9,6 +9,13 @@
   like the engineer who gets paged at 3am, and who has cleaned up after a breach.
 </p>
 
+<p align="center">
+  <a href="https://github.com/aldo01/scar-tissue/actions/workflows/test.yml"><img src="https://github.com/aldo01/scar-tissue/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+  <a href="RULES.md"><img src="https://img.shields.io/badge/rules-90-blue" alt="90 rules"></a>
+  <a href="docs/INSTALL.md"><img src="https://img.shields.io/badge/agents-Claude%20Code%20%7C%20Codex%20%7C%20Cursor%20%7C%20Copilot-8A2BE2" alt="Works with Claude Code, Codex, Cursor, Copilot"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
+</p>
+
 ---
 
 AI agents write backend code that passes every test and then fails in production: the retry that double-charges a card, the HTTP call with no timeout that takes down the whole API, the migration that locks a table during a deploy, the endpoint that returns any user's orders if you change the ID in the URL.

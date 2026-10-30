@@ -306,3 +306,11 @@ test('CLI --format text prints the report and accepts flags in any order', () =>
   assert.equal(run('--format', 'text', examplePath).status, 0);
   assert.equal(run(examplePath, '--format', 'html').status, 2);
 });
+
+test('every rule count in the README matches rules.json', () => {
+  const readme = fs.readFileSync(path.join(SKILL_DIR, '..', '..', 'README.md'), 'utf8');
+  const count = String(catalog.size);
+  const mentions = [...readme.matchAll(/\b(\d+) rules\b|badge\/rules-(\d+)-/g)].map((m) => m[1] || m[2]);
+  assert.ok(mentions.length > 0, 'README should state the rule count');
+  for (const n of mentions) assert.equal(n, count, `README says ${n} rules, rules.json has ${count}`);
+});
