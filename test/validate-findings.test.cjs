@@ -157,7 +157,7 @@ test('warns when findings are not ordered by severity', () => {
 
 function ruleHeadings() {
   const ids = new Map();
-  for (const file of fs.readdirSync(SKILL_DIR).filter((f) => f.endsWith('.md') && f !== 'SKILL.md')) {
+  for (const file of fs.readdirSync(SKILL_DIR).filter((f) => f.endsWith('.md') && !['SKILL.md', 'README.md'].includes(f))) {
     const text = fs.readFileSync(path.join(SKILL_DIR, file), 'utf8');
     for (const match of text.matchAll(/^## ([a-z]+\.[a-z0-9-]+)\s*$/gm)) ids.set(match[1], file);
   }
@@ -184,7 +184,7 @@ test('every rule heading in the reference files is in rules.json, and vice versa
 const REQUIRED_SECTIONS = ['Look for', 'Not a finding when', 'Failure', 'Fix', 'Verify', 'Severity'];
 
 function referenceFiles() {
-  return fs.readdirSync(SKILL_DIR).filter((f) => f.endsWith('.md') && f !== 'SKILL.md');
+  return fs.readdirSync(SKILL_DIR).filter((f) => f.endsWith('.md') && !['SKILL.md', 'README.md'].includes(f));
 }
 
 function ruleSections(text) {

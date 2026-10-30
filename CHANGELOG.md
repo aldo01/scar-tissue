@@ -2,6 +2,14 @@
 
 All notable changes to scar-tissue are listed here. Rule IDs are stable: a released rule ID is never renamed or reused.
 
+## 0.1.4 - 2026-10-30
+
+### Changed
+
+- Added a README to the plugin folder for the directory listing. It states what the plugin contains, runs, and sends.
+- Removed `documentationUrl` and `supportUrl` from `plugin.json`; they are set in the directory listing instead.
+- `SECURITY-INJECTION.md`: shell payload examples described in words.
+
 ## 0.1.3 - 2026-10-30
 
 ### Changed

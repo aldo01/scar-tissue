@@ -1,6 +1,6 @@
 {
   "name": "scar-tissue",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "description": "Agent skill that writes, reviews, and hardens backend code for production failures and security vulnerabilities.",
   "license": "MIT",
