@@ -2,6 +2,12 @@
 
 All notable changes to scar-tissue are listed here. Rule IDs are stable: a released rule ID is never renamed or reused.
 
+## 0.1.3 - 2026-10-30
+
+### Changed
+
+- `SECURITY-INJECTION.md`: described shell invocations and XML entity payloads in words instead of literal URLs and `sh -c` snippets, so the directory scanner no longer matches a download-and-run pattern. The rules are unchanged.
+
 ## 0.1.2 - 2026-10-30
 
 ### Changed

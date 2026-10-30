@@ -1,6 +1,6 @@
 {
   "name": "scar-tissue",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Reviews, audits, and hardens backend code for production failures and security vulnerabilities. 90 rules across reliability and security.",
   "author": {
     "name": "Nimish Karan",
