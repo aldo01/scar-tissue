@@ -55,11 +55,11 @@ Also: dynamic identifiers (`ORDER BY`, column names, table names) taken from inp
 
 **Not a finding when**: the program and arguments are passed as a list with no shell (`subprocess.run(["convert", path, out])`, `execFile`, `exec.Command("convert", path, out)`), input is validated against a strict allowlist, and options are separated from arguments with `--` where the tool supports it.
 
-**Failure**: an attacker submits a filename containing shell metacharacters, such as `x; id` or `$(id)`, and gets remote code execution on the server, with the service's credentials and network access.
+**Failure**: an attacker submits a filename containing shell metacharacters (a semicolon, a pipe, backticks, or command substitution) and gets remote code execution on the server, with the service's credentials and network access.
 
 **Fix**: avoid the shell. Pass arguments as an array, validate input against an allowlist, insert `--` before user-supplied arguments, and prefer a library over shelling out (an image library instead of calling `convert`).
 
-**Verify**: a test that passes `; touch /tmp/pwned` and `--help`-style inputs and asserts no extra command runs and the input is rejected or treated as a literal.
+**Verify**: a test that passes inputs containing shell metacharacters, and inputs that start with `-`, and asserts no extra command runs and the input is rejected or treated as a literal.
 
 **Severity**: `critical`.
 
