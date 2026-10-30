@@ -51,7 +51,7 @@ Also: dynamic identifiers (`ORDER BY`, column names, table names) taken from inp
 - Node.js `child_process.exec`/`execSync` with template strings.
 - Java `Runtime.exec` with a concatenated command, or `ProcessBuilder("sh", "-c", ...)`.
 - Go `exec.Command("sh", "-c", ...)` or `bash -c` with input.
-- Argument injection even without a shell: input starting with `-` passed as an argument to tools like `git`, `curl`, `tar`, `ffmpeg`, or `ImageMagick` (for example `--upload-pack=...` for `git`, `-o` for `curl`).
+- Argument injection even without a shell: input starting with `-` passed as an argument to tools like `git`, `tar`, `ffmpeg`, or `ImageMagick` (for example `--upload-pack=...` for `git`).
 
 **Not a finding when**: the program and arguments are passed as a list with no shell (`subprocess.run(["convert", path, out])`, `execFile`, `exec.Command("convert", path, out)`), input is validated against a strict allowlist, and options are separated from arguments with `--` where the tool supports it.
 

@@ -2,6 +2,12 @@
 
 All notable changes to scar-tissue are listed here. Rule IDs are stable: a released rule ID is never renamed or reused.
 
+## 0.1.2 - 2026-10-30
+
+### Changed
+
+- Renamed internal identifiers in `validate-findings.cjs` and reworded two documentation examples that Anthropic's plugin directory scanner matched as credential access and download-and-run patterns. No behavior change.
+
 ## 0.1.1 - 2026-10-30
 
 ### Changed
