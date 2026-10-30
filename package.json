@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "test": "node --test skills/scar-tissue/validate-findings.test.cjs",
-    "validate:example": "node skills/scar-tissue/validate-findings.cjs examples/payment-api/scar-tissue-report.json"
+    "validate:example": "node skills/scar-tissue/validate-findings.cjs examples/payment-api/scar-tissue-report.json",
+    "rules": "node scripts/generate-rules-index.cjs"
   },
   "engines": {
     "node": ">=20"

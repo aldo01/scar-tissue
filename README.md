@@ -81,7 +81,7 @@ Then ask it to harden the code, and you get [`after.py`](examples/payment-api/af
 | **Request handling** | SSRF to cloud metadata, open redirects, CORS that reflects any origin, CSRF, XSS, unsafe file uploads, stack traces sent to clients |
 | **Secrets & config** | Hardcoded keys, MD5 and ECB, `Math.random()` tokens, `verify=False`, debug consoles in production, known-vulnerable dependencies |
 
-The full catalog is in [`rules.json`](skills/scar-tissue/rules.json), and each rule is documented in [`skills/scar-tissue/`](skills/scar-tissue/).
+See [RULES.md](RULES.md) for all 90 rules with links to their full descriptions. The machine-readable catalog is [`rules.json`](skills/scar-tissue/rules.json).
 
 ## No slop findings
 
