@@ -17,9 +17,9 @@ Example requests: "Audit the payments service for production readiness", "Do a s
 ## What this plugin contains and does
 
 - Instructions and reference documents that Claude reads. The code snippets in them are examples of vulnerable patterns for Claude to recognize. The plugin never runs them.
-- A local validator script that checks a findings report against the bundled schema. Claude runs it with Node.js only when you ask for a machine-readable report. It reads the report file and the bundled rule list, writes only to the terminal, reads no environment variables or credentials, and makes no network requests.
+- A JSON rule catalog and a JSON schema for machine-readable findings reports.
 
-The plugin has no hooks, MCP servers, or background processes, and it sends no data anywhere. During security reviews the skill instructs Claude never to test against live or third-party systems and never to print secrets it finds.
+The plugin contains only Markdown, JSON, and an icon. It has no scripts, hooks, MCP servers, or background processes, and it sends no data anywhere. During security reviews the skill instructs Claude never to test against live or third-party systems and never to print secrets it finds.
 
 ## License
 

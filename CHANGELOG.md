@@ -2,6 +2,12 @@
 
 All notable changes to scar-tissue are listed here. Rule IDs are stable: a released rule ID is never renamed or reused.
 
+## 0.1.5 - 2026-11-11
+
+### Changed
+
+- The plugin folder now contains only Markdown, JSON, and the icon. Anthropic's plugin directory accepts scripts only from Verified organizations, so `validate-findings.cjs` moved from `skills/scar-tissue/` to `scripts/`. The skill now runs the same report checks itself before presenting a machine-readable report; the script still runs in CI and with `npm run validate:example`.
+
 ## 0.1.4 - 2026-10-30
 
 ### Changed

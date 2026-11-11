@@ -251,7 +251,7 @@ function main(argv) {
   };
   const flagValues = new Set(['--rules', '--format'].map((n) => args.indexOf(n) + 1).filter((i) => i > 0));
   const reportPath = args.find((a, i) => !a.startsWith('--') && !flagValues.has(i));
-  const rulesPath = flagValue('--rules') || path.join(__dirname, 'rules.json');
+  const rulesPath = flagValue('--rules') || path.join(__dirname, '..', 'skills', 'scar-tissue', 'rules.json');
   const format = flagValue('--format') || 'check';
   if (!reportPath || !['check', 'text'].includes(format)) {
     console.error('Usage: node validate-findings.cjs <scar-tissue-report.json> [--rules <rules.json>] [--format text] [--color | --no-color]');

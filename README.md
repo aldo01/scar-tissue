@@ -100,7 +100,7 @@ Most AI code reviews bury real problems under "consider adding logging" and "fol
 
 > **If you cannot describe the concrete failure (the trigger, what breaks, and who notices), it is not a finding.**
 
-Machine-readable reports are checked by [`validate-findings.cjs`](skills/scar-tissue/validate-findings.cjs), which rejects findings that describe advice instead of a failure, use unknown rules, or claim `likely` without naming the assumption. Every finding carries a confidence level: `confirmed`, `likely`, or `needs-validation`. Add `--format text` to print a validated report in readable form.
+Machine-readable reports are checked by [`validate-findings.cjs`](scripts/validate-findings.cjs), which rejects findings that describe advice instead of a failure, use unknown rules, or claim `likely` without naming the assumption. Every finding carries a confidence level: `confirmed`, `likely`, or `needs-validation`. Add `--format text` to print a validated report in readable form.
 
 ## Install
 

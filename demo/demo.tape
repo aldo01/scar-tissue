@@ -27,12 +27,12 @@ Enter
 Type "# The scar-tissue audit of that file:"
 Enter
 Sleep 400ms
-Type "node ../../skills/scar-tissue/validate-findings.cjs scar-tissue-report.json --format text --color | head -30"
+Type "node ../../scripts/validate-findings.cjs scar-tissue-report.json --format text --color | head -30"
 Enter
 Sleep 9s
 
 Type "clear"
 Enter
-Type "node ../../skills/scar-tissue/validate-findings.cjs scar-tissue-report.json --format text --color | tail -1"
+Type "node ../../scripts/validate-findings.cjs scar-tissue-report.json --format text --color | tail -1"
 Enter
 Sleep 4s
