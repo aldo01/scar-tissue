@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { validateReport, loadCatalog, renderText } = require('../skills/scar-tissue/validate-findings.cjs');
+const { validateReport, loadCatalog, renderText } = require('../scripts/validate-findings.cjs');
 
 const SKILL_DIR = path.join(__dirname, '..', 'skills', 'scar-tissue');
 const RULES_PATH = path.join(SKILL_DIR, 'rules.json');
@@ -267,7 +267,7 @@ test('CLI exits 0 for a valid report and 1 for an invalid one', (t) => {
   fs.writeFileSync(good, JSON.stringify(report([finding()])));
   fs.writeFileSync(bad, JSON.stringify(report([finding({ rule: 'nope.nope' })])));
 
-  const cli = path.join(SKILL_DIR, 'validate-findings.cjs');
+  const cli = path.join(__dirname, '..', 'scripts', 'validate-findings.cjs');
   assert.equal(spawnSync(process.execPath, [cli, good]).status, 0);
   assert.equal(spawnSync(process.execPath, [cli, bad]).status, 1);
   assert.equal(spawnSync(process.execPath, [cli]).status, 2);
@@ -296,7 +296,7 @@ test('renderText prints each finding and a summary line', () => {
 
 test('CLI --format text prints the report and accepts flags in any order', () => {
   const examplePath = path.join(SKILL_DIR, '..', '..', 'examples', 'payment-api', 'scar-tissue-report.json');
-  const cli = path.join(SKILL_DIR, 'validate-findings.cjs');
+  const cli = path.join(__dirname, '..', 'scripts', 'validate-findings.cjs');
   const run = (...args) => spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8' });
 
   const after = run(examplePath, '--format', 'text');
@@ -316,4 +316,19 @@ test('every rule count in the README matches rules.json', () => {
   const mentions = [...readme.matchAll(/\b(\d+) rules\b|badge\/rules-(\d+)-/g)].map((m) => m[1] || m[2]);
   assert.ok(mentions.length > 0, 'README should state the rule count');
   for (const n of mentions) assert.equal(n, count, `README says ${n} rules, rules.json has ${count}`);
+});
+
+// Anthropic's plugin directory refuses other file types from organizations that are not Verified.
+test('plugin folder ships only Markdown, text, JSON, YAML, and images', () => {
+  const allowed = /\.(md|txt|json|ya?ml|png|jpe?g|gif|webp|ico)$/i;
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]);
+  for (const file of walk(SKILL_DIR)) {
+    const rel = path.relative(SKILL_DIR, file);
+    if (path.basename(file) === '.DS_Store') continue;
+    assert.match(rel, allowed, `${rel} is not an allowed file type`);
+    const buf = fs.readFileSync(file);
+    assert.notEqual(buf.subarray(0, 2).toString(), '#!', `${rel} starts with #!`);
+    if (!/\.(png|jpe?g|gif|webp|ico)$/i.test(rel)) assert.ok(!buf.includes(0), `${rel} contains a NUL byte`);
+  }
 });

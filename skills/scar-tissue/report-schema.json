@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "scar-tissue report",
-  "description": "Machine-readable output of a scar-tissue production-readiness audit. validate-findings.cjs enforces this schema plus semantic checks (known rule IDs, concrete failure scenarios, summary counts).",
+  "description": "Machine-readable output of a scar-tissue production-readiness audit. The scar-tissue repository's scripts/validate-findings.cjs enforces this schema plus semantic checks (known rule IDs, concrete failure scenarios, summary counts).",
   "type": "object",
   "required": ["tool", "schema_version", "target", "findings"],
   "additionalProperties": false,

@@ -214,15 +214,16 @@ Also at: other/file.ext:12, other/file.ext:88        ← only if applicable
 
 End with: `N findings: X critical, Y high, Z medium, W low. Fix first: <finding>.`
 
-**Machine-readable report.** Only when the user asks for one, write `scar-tissue-report.json` conforming to [report-schema.json](report-schema.json), then run the validator and loop until it passes:
+**Machine-readable report.** Only when the user asks for one, write `scar-tissue-report.json` conforming to [report-schema.json](report-schema.json). Before presenting it, check every item below and fix the report until all pass:
 
-```bash
-node <path-to-this-skill>/validate-findings.cjs scar-tissue-report.json
-```
+- Every `rule` is an `id` in [rules.json](rules.json). Do not invent rule IDs.
+- Finding IDs look like `ST-001` and are unique.
+- Every `failure.trigger` and `failure.what_breaks` states what happens in production, not advice. No "best practice", "consider adding/using/implementing", "it would be better", or "could potentially"; recommendations belong in `fix`.
+- `likely` findings have an `assumption` naming what you could not see; `needs-validation` findings have a `validation` saying exactly what to test or check.
+- Findings are ordered most severe first.
+- If there is a `summary`, its counts per severity match the findings, and `fix_first` is an existing finding ID.
 
-If it reports errors, fix the report and run it again. Do not present the report until validation passes. The validator rejects unknown rule IDs, findings whose failure scenario is advice rather than a failure, `likely` findings without an assumption, and summaries whose counts do not match.
-
-To show a validated report to the user in readable form, add `--format text`.
+The scar-tissue repository runs the same checks in CI with `scripts/validate-findings.cjs`. If the user's project has that script, run it on the report as well.
 
 ## Reference files
 
